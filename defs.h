@@ -19,7 +19,7 @@ void            bwrite(struct buf*);
 // console.c
 void            consoleinit(void);
 void            cprintf(char*, ...);
-void            consoleintr(int(*)(void));
+void            consoleintr(int (*)(void));
 void            panic(char*) __attribute__((noreturn));
 
 // exec.c
@@ -60,7 +60,7 @@ void            iderw(struct buf*);
 
 // ioapic.c
 void            ioapicenable(int irq, int cpu);
-extern uchar    ioapicid;
+extern uchar ioapicid;
 void            ioapicinit(void);
 
 // kalloc.c
@@ -93,7 +93,7 @@ void            begin_op();
 void            end_op();
 
 // mp.c
-extern int      ismp;
+extern int ismp;
 void            mpinit(void);
 
 // picirq.c
@@ -171,7 +171,7 @@ void            timerinit(void);
 
 // trap.c
 void            idtinit(void);
-extern uint     ticks;
+extern uint ticks;
 void            tvinit(void);
 extern struct   spinlock tickslock;
 

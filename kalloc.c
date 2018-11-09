@@ -14,17 +14,17 @@ extern char end[]; // first address after kernel loaded from ELF file
                    // defined by the kernel linker script in kernel.ld
 
 struct run {
-  struct run *next;
+    struct run *next;
 };
 
 struct {
-  struct spinlock lock;
-  int use_lock;
-  struct run *freelist;
+    struct spinlock lock;
+    int use_lock;
+    struct run *freelist;
 
-  // Used in fork_cow
-  uint numFreePages;
-  uint pg_refcount[PHYSTOP >> PGSHIFT];
+    // Used in fork_cow
+    uint numFreePages;
+    uint pg_refcount[PHYSTOP >> PGSHIFT];
 
 } kmem;
 
@@ -35,26 +35,26 @@ struct {
 // after installing a full page table that maps them on all cores.
 void kinit1(void *vstart, void *vend)
 {
-  initlock(&kmem.lock, "kmem");
-  kmem.use_lock = 0;
-  kmem.numFreePages = 0;        // init free pages to 0
-  freerange(vstart, vend);
+    initlock(&kmem.lock, "kmem");
+    kmem.use_lock = 0;
+    kmem.numFreePages = 0;      // init free pages to 0
+    freerange(vstart, vend);
 }
 
 void kinit2(void *vstart, void *vend)
 {
-  freerange(vstart, vend);
-  kmem.use_lock = 1;
+    freerange(vstart, vend);
+    kmem.use_lock = 1;
 }
 
 void freerange(void *vstart, void *vend)
 {
-  char *p;
-  p = (char*)PGROUNDUP((uint)vstart);
-  for(; p + PGSIZE <= (char*)vend; p += PGSIZE) {
-      kmem.pg_refcount[V2P(p) >> PGSHIFT] = 0;          // init the reference count to 0
-      kfree(p);
-  }
+    char *p;
+    p = (char*)PGROUNDUP((uint)vstart);
+    for(; p + PGSIZE <= (char*)vend; p += PGSIZE) {
+        kmem.pg_refcount[V2P(p) >> PGSHIFT] = 0;        // init the reference count to 0
+        kfree(p);
+    }
 }
 //PAGEBREAK: 21
 // Free the page of physical memory pointed at by v,
@@ -77,7 +77,7 @@ void kfree(char *v)
     if(kmem.pg_refcount[V2P(v) >> PGSHIFT] > 0)         // Decrement the reference count of a page whenever someone frees it
         --kmem.pg_refcount[V2P(v) >> PGSHIFT];
 
-    if(kmem.pg_refcount[V2P(v) >> PGSHIFT] == 0){       // Free the page only if there are no references to the page
+    if(kmem.pg_refcount[V2P(v) >> PGSHIFT] == 0) {       // Free the page only if there are no references to the page
         // Fill with junk to catch dangling refs.
         memset(v, 1, PGSIZE);
         kmem.numFreePages++;                            // Increment the number of free pages by 1 when a page is freed
@@ -94,30 +94,30 @@ void kfree(char *v)
 // Returns 0 if the memory cannot be allocated.
 char* kalloc(void)
 {
-  struct run *r;
+    struct run *r;
 
-  if(kmem.use_lock)
-    acquire(&kmem.lock);
-  r = kmem.freelist;
-  if(r) {
-      kmem.freelist = r->next;
-      kmem.numFreePages--;                                 // Decrement the number of free pages by 1 on a page allocation
-      kmem.pg_refcount[V2P((char*)r) >> PGSHIFT] = 1;     // reference count of a page is set to one when it is allocated
-  }
-  if(kmem.use_lock)
-    release(&kmem.lock);
-  return (char*)r;
+    if(kmem.use_lock)
+        acquire(&kmem.lock);
+    r = kmem.freelist;
+    if(r) {
+        kmem.freelist = r->next;
+        kmem.numFreePages--;                               // Decrement the number of free pages by 1 on a page allocation
+        kmem.pg_refcount[V2P((char*)r) >> PGSHIFT] = 1;   // reference count of a page is set to one when it is allocated
+    }
+    if(kmem.use_lock)
+        release(&kmem.lock);
+    return (char*)r;
 }
 
 // Returns the number of free pages.
 uint getNumFreePages(void)
 {
-  if(kmem.use_lock)
-    acquire(&kmem.lock);
-  uint r = kmem.numFreePages;
-  if(kmem.use_lock)
-    release(&kmem.lock);
-  return (r);
+    if(kmem.use_lock)
+        acquire(&kmem.lock);
+    uint r = kmem.numFreePages;
+    if(kmem.use_lock)
+        release(&kmem.lock);
+    return (r);
 }
 
 // Decrement the applicable reference counter
