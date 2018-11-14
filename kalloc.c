@@ -33,22 +33,19 @@ struct {
 // the pages mapped by entrypgdir on free list.
 // 2. main() calls kinit2() with the rest of the physical pages
 // after installing a full page table that maps them on all cores.
-void kinit1(void *vstart, void *vend)
-{
+void kinit1(void *vstart, void *vend) {
     initlock(&kmem.lock, "kmem");
     kmem.use_lock = 0;
     kmem.numFreePages = 0;      // init free pages to 0
     freerange(vstart, vend);
 }
 
-void kinit2(void *vstart, void *vend)
-{
+void kinit2(void *vstart, void *vend) {
     freerange(vstart, vend);
     kmem.use_lock = 1;
 }
 
-void freerange(void *vstart, void *vend)
-{
+void freerange(void *vstart, void *vend) {
     char *p;
     p = (char*)PGROUNDUP((uint)vstart);
     for(; p + PGSIZE <= (char*)vend; p += PGSIZE) {
@@ -63,8 +60,7 @@ void freerange(void *vstart, void *vend)
 // initializing the allocator; see kinit above.)
 
 // had to change kfree
-void kfree(char *v)
-{
+void kfree(char *v) {
     struct run *r;
 
     if((uint)v % PGSIZE || v < end || V2P(v) >= PHYSTOP)
@@ -92,8 +88,7 @@ void kfree(char *v)
 // Allocate one 4096-byte page of physical memory.
 // Returns a pointer that the kernel can use.
 // Returns 0 if the memory cannot be allocated.
-char* kalloc(void)
-{
+char* kalloc(void) {
     struct run *r;
 
     if(kmem.use_lock)
@@ -110,8 +105,7 @@ char* kalloc(void)
 }
 
 // Returns the number of free pages.
-uint getNumFreePages(void)
-{
+uint getNumFreePages(void) {
     if(kmem.use_lock)
         acquire(&kmem.lock);
     uint r = kmem.numFreePages;
@@ -121,8 +115,7 @@ uint getNumFreePages(void)
 }
 
 // Decrement the applicable reference counter
-void decrementReferenceCount(uint pa)
-{
+void decrementReferenceCount(uint pa) {
     if(pa < (int)V2P(end) || pa >= PHYSTOP)
         panic("decrementReferenceCount");
 
@@ -132,8 +125,7 @@ void decrementReferenceCount(uint pa)
 }
 
 // Increment the applicable reference counter
-void incrementReferenceCount(uint pa)
-{
+void incrementReferenceCount(uint pa) {
     if(pa < (int)V2P(end) || pa >= PHYSTOP)
         panic("incrementReferenceCount");
 
@@ -143,8 +135,7 @@ void incrementReferenceCount(uint pa)
 }
 
 // Return the applicable reference counter
-uint getReferenceCount(uint pa)
-{
+uint getReferenceCount(uint pa) {
     if(pa < (int)V2P(end) || pa >= PHYSTOP)
         panic("getReferenceCount");
     uint count;

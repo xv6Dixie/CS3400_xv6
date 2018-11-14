@@ -24,8 +24,7 @@ static struct {
     int locking;
 } cons;
 
-static void printint(int xx, int base, int sign)
-{
+static void printint(int xx, int base, int sign) {
     static char digits[] = "0123456789abcdef";
     char buf[16];
     int i;
@@ -50,8 +49,7 @@ static void printint(int xx, int base, int sign)
 //PAGEBREAK: 50
 
 // Print to the console. only understands %d, %x, %p, %s.
-void cprintf(char *fmt, ...)
-{
+void cprintf(char *fmt, ...) {
     int i, c, locking;
     uint *argp;
     char *s;
@@ -101,8 +99,7 @@ void cprintf(char *fmt, ...)
         release(&cons.lock);
 }
 
-void panic(char *s)
-{
+void panic(char *s) {
     int i;
     uint pcs[10];
     struct cpu *cpu = mycpu();
@@ -127,8 +124,7 @@ void panic(char *s)
 #define CRTPORT 0x3d4
 static ushort *crt = (ushort*)P2V(0xb8000);  // CGA memory
 
-static void cgaputc(int c)
-{
+static void cgaputc(int c) {
     int pos;
 
     // Cursor position: col + 80*row.
@@ -160,8 +156,7 @@ static void cgaputc(int c)
     crt[pos] = ' ' | 0x0700;
 }
 
-void consputc(int c)
-{
+void consputc(int c) {
     if(panicked) {
         cli();
         for(;;)
@@ -185,8 +180,7 @@ struct {
 
 #define C(x)  ((x)-'@')  // Control-x
 
-void consoleintr(int (*getc)(void))
-{
+void consoleintr(int (*getc)(void)) {
     int c, doprocdump = 0;
 
     acquire(&cons.lock);
@@ -228,8 +222,7 @@ void consoleintr(int (*getc)(void))
     }
 }
 
-int consoleread(struct inode *ip, char *dst, int n)
-{
+int consoleread(struct inode *ip, char *dst, int n) {
     uint target;
     int c;
     struct proc *proc = myproc();
@@ -266,8 +259,7 @@ int consoleread(struct inode *ip, char *dst, int n)
     return target - n;
 }
 
-int consolewrite(struct inode *ip, char *buf, int n)
-{
+int consolewrite(struct inode *ip, char *buf, int n) {
     int i;
 
     iunlock(ip);
@@ -280,8 +272,7 @@ int consolewrite(struct inode *ip, char *buf, int n)
     return n;
 }
 
-void consoleinit(void)
-{
+void consoleinit(void) {
     initlock(&cons.lock, "console");
 
     devsw[CONSOLE].write = consolewrite;

@@ -31,20 +31,17 @@ struct ioapic {
     uint data;
 };
 
-static uint ioapicread(int reg)
-{
+static uint ioapicread(int reg) {
     ioapic->reg = reg;
     return ioapic->data;
 }
 
-static void ioapicwrite(int reg, uint data)
-{
+static void ioapicwrite(int reg, uint data) {
     ioapic->reg = reg;
     ioapic->data = data;
 }
 
-void ioapicinit(void)
-{
+void ioapicinit(void) {
     int i, id, maxintr;
 
     ioapic = (volatile struct ioapic*)IOAPIC;
@@ -61,8 +58,7 @@ void ioapicinit(void)
     }
 }
 
-void ioapicenable(int irq, int cpunum)
-{
+void ioapicenable(int irq, int cpunum) {
     // Mark interrupt edge-triggered, active high,
     // enabled, and routed to the given cpunum,
     // which happens to be that cpu's APIC ID.

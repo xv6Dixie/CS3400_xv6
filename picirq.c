@@ -7,9 +7,7 @@
 #define IO_PIC2         0xA0    // Slave (IRQs 8-15)
 
 // Don't use the 8259A interrupt controllers.  Xv6 assumes SMP hardware.
-void
-picinit(void)
-{
+void picinit(void) {
     // mask all interrupts
     outb(IO_PIC1+1, 0xFF);
     outb(IO_PIC2+1, 0xFF);

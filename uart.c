@@ -16,9 +16,7 @@
 
 static int uart;    // is there a uart?
 
-void
-uartinit(void)
-{
+void uartinit(void) {
     char *p;
 
     // Turn off the FIFO
@@ -48,9 +46,7 @@ uartinit(void)
         uartputc(*p);
 }
 
-void
-uartputc(int c)
-{
+void uartputc(int c) {
     int i;
 
     if(!uart)
@@ -60,9 +56,7 @@ uartputc(int c)
     outb(COM1+0, c);
 }
 
-static int
-uartgetc(void)
-{
+static int uartgetc(void) {
     if(!uart)
         return -1;
     if(!(inb(COM1+5) & 0x01))
@@ -70,8 +64,6 @@ uartgetc(void)
     return inb(COM1+0);
 }
 
-void
-uartintr(void)
-{
+void uartintr(void) {
     consoleintr(uartgetc);
 }

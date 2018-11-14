@@ -1,0 +1,22 @@
+Changes made to every other file:
+
+formatting fixes
+
+Changes made to the vm.c file
+
+[seginit]
+    gave the cpu struct the cpu and proc value
+
+[switchuvm]
+    Add an if statement to check for bad pgdir value
+
+[copyuvm]
+    removed the char pointer to mem
+    the if statement that uses the mem object now uses the PGSIZE definition in mappages
+    BAD: now has a call to flush the TLB
+
+[pagefault]
+    Created this function
+    To detect and handle issues with forking
+
+

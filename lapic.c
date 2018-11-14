@@ -44,14 +44,12 @@
 volatile uint *lapic;  // Initialized in mp.c
 
 //PAGEBREAK!
-static void lapicw(int index, int value)
-{
+static void lapicw(int index, int value) {
     lapic[index] = value;
     lapic[ID]; // wait for write to finish, by reading
 }
 
-void lapicinit(void)
-{
+void lapicinit(void) {
     if(!lapic)
         return;
 
@@ -95,33 +93,28 @@ void lapicinit(void)
     lapicw(TPR, 0);
 }
 
-int lapicid(void)
-{
+int lapicid(void) {
     if (!lapic)
         return 0;
     return lapic[ID] >> 24;
 }
 
 // Acknowledge interrupt.
-void lapiceoi(void)
-{
+void lapiceoi(void) {
     if(lapic)
         lapicw(EOI, 0);
 }
 
 // Spin for a given number of microseconds.
 // On real hardware would want to tune this dynamically.
-void microdelay(int us)
-{
-}
+void microdelay(int us) {}
 
 #define CMOS_PORT    0x70
 #define CMOS_RETURN  0x71
 
 // Start additional processor running entry code at addr.
 // See Appendix B of MultiProcessor Specification.
-void lapicstartap(uchar apicid, uint addr)
-{
+void lapicstartap(uchar apicid, uint addr) {
     int i;
     ushort *wrv;
 
@@ -165,16 +158,14 @@ void lapicstartap(uchar apicid, uint addr)
 #define MONTH   0x08
 #define YEAR    0x09
 
-static uint cmos_read(uint reg)
-{
+static uint cmos_read(uint reg) {
     outb(CMOS_PORT,  reg);
     microdelay(200);
 
     return inb(CMOS_RETURN);
 }
 
-static void fill_rtcdate(struct rtcdate *r)
-{
+static void fill_rtcdate(struct rtcdate *r) {
     r->second = cmos_read(SECS);
     r->minute = cmos_read(MINS);
     r->hour   = cmos_read(HOURS);
@@ -184,8 +175,7 @@ static void fill_rtcdate(struct rtcdate *r)
 }
 
 // qemu seems to use 24-hour GWT and the values are BCD encoded
-void cmostime(struct rtcdate *r)
-{
+void cmostime(struct rtcdate *r) {
     struct rtcdate t1, t2;
     int sb, bcd;
 

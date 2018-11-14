@@ -18,9 +18,7 @@
 
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
-static int
-argfd(int n, int *pfd, struct file **pf)
-{
+static int argfd(int n, int *pfd, struct file **pf) {
     int fd;
     struct file *f;
 
@@ -37,9 +35,7 @@ argfd(int n, int *pfd, struct file **pf)
 
 // Allocate a file descriptor for the given file.
 // Takes over file reference from caller on success.
-static int
-fdalloc(struct file *f)
-{
+static int fdalloc(struct file *f) {
     int fd;
     struct proc *curproc = myproc();
 
@@ -52,9 +48,7 @@ fdalloc(struct file *f)
     return -1;
 }
 
-int
-sys_dup(void)
-{
+int sys_dup(void) {
     struct file *f;
     int fd;
 
@@ -66,9 +60,7 @@ sys_dup(void)
     return fd;
 }
 
-int
-sys_read(void)
-{
+int sys_read(void) {
     struct file *f;
     int n;
     char *p;
@@ -78,9 +70,7 @@ sys_read(void)
     return fileread(f, p, n);
 }
 
-int
-sys_write(void)
-{
+int sys_write(void) {
     struct file *f;
     int n;
     char *p;
@@ -90,9 +80,7 @@ sys_write(void)
     return filewrite(f, p, n);
 }
 
-int
-sys_close(void)
-{
+int sys_close(void) {
     int fd;
     struct file *f;
 
@@ -103,9 +91,7 @@ sys_close(void)
     return 0;
 }
 
-int
-sys_fstat(void)
-{
+int sys_fstat(void) {
     struct file *f;
     struct stat *st;
 
@@ -115,9 +101,7 @@ sys_fstat(void)
 }
 
 // Create the path new as a link to the same inode as old.
-int
-sys_link(void)
-{
+int sys_link(void) {
     char name[DIRSIZ], *new, *old;
     struct inode *dp, *ip;
 
@@ -165,9 +149,7 @@ bad:
 }
 
 // Is the directory dp empty except for "." and ".." ?
-static int
-isdirempty(struct inode *dp)
-{
+static int isdirempty(struct inode *dp) {
     int off;
     struct dirent de;
 
@@ -181,9 +163,7 @@ isdirempty(struct inode *dp)
 }
 
 //PAGEBREAK!
-int
-sys_unlink(void)
-{
+int sys_unlink(void) {
     struct inode *ip, *dp;
     struct dirent de;
     char name[DIRSIZ], *path;
@@ -238,9 +218,7 @@ bad:
     return -1;
 }
 
-static struct inode*
-create(char *path, short type, short major, short minor)
-{
+static struct inode* create(char *path, short type, short major, short minor) {
     uint off;
     struct inode *ip, *dp;
     char name[DIRSIZ];
@@ -283,9 +261,7 @@ create(char *path, short type, short major, short minor)
     return ip;
 }
 
-int
-sys_open(void)
-{
+int sys_open(void) {
     char *path;
     int fd, omode;
     struct file *f;
@@ -333,9 +309,7 @@ sys_open(void)
     return fd;
 }
 
-int
-sys_mkdir(void)
-{
+int sys_mkdir(void) {
     char *path;
     struct inode *ip;
 
@@ -349,9 +323,7 @@ sys_mkdir(void)
     return 0;
 }
 
-int
-sys_mknod(void)
-{
+int sys_mknod(void) {
     struct inode *ip;
     char *path;
     int major, minor;
@@ -369,9 +341,7 @@ sys_mknod(void)
     return 0;
 }
 
-int
-sys_chdir(void)
-{
+int sys_chdir(void) {
     char *path;
     struct inode *ip;
     struct proc *curproc = myproc();
@@ -394,9 +364,7 @@ sys_chdir(void)
     return 0;
 }
 
-int
-sys_exec(void)
-{
+int sys_exec(void) {
     char *path, *argv[MAXARG];
     int i;
     uint uargv, uarg;
@@ -420,9 +388,7 @@ sys_exec(void)
     return exec(path, argv);
 }
 
-int
-sys_pipe(void)
-{
+int sys_pipe(void) {
     int *fd;
     struct file *rf, *wf;
     int fd0, fd1;

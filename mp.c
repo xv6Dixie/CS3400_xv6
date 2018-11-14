@@ -15,8 +15,7 @@ struct cpu cpus[NCPU];
 int ncpu;
 uchar ioapicid;
 
-static uchar sum(uchar *addr, int len)
-{
+static uchar sum(uchar *addr, int len) {
     int i, sum;
 
     sum = 0;
@@ -26,8 +25,7 @@ static uchar sum(uchar *addr, int len)
 }
 
 // Look for an MP structure in the len bytes at addr.
-static struct mp* mpsearch1(uint a, int len)
-{
+static struct mp* mpsearch1(uint a, int len) {
     uchar *e, *p, *addr;
 
     addr = P2V(a);
@@ -43,8 +41,7 @@ static struct mp* mpsearch1(uint a, int len)
 // 1) in the first KB of the EBDA;
 // 2) in the last KB of system base memory;
 // 3) in the BIOS ROM between 0xE0000 and 0xFFFFF.
-static struct mp* mpsearch(void)
-{
+static struct mp* mpsearch(void) {
     uchar *bda;
     uint p;
     struct mp *mp;
@@ -66,8 +63,7 @@ static struct mp* mpsearch(void)
 // Check for correct signature, calculate the checksum and,
 // if correct, check the version.
 // To do: check extended table checksum.
-static struct mpconf* mpconfig(struct mp **pmp)
-{
+static struct mpconf* mpconfig(struct mp **pmp) {
     struct mpconf *conf;
     struct mp *mp;
 
@@ -84,8 +80,7 @@ static struct mpconf* mpconfig(struct mp **pmp)
     return conf;
 }
 
-void mpinit(void)
-{
+void mpinit(void) {
     uchar *p, *e;
     int ismp;
     struct mp *mp;
