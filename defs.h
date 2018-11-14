@@ -112,6 +112,7 @@ int             cpuid(void);
 
 void            exit(void);
 int             fork(void);
+int             fork_original(void);
 int             growproc(int);
 int             kill(int);
 
@@ -191,6 +192,7 @@ int             deallocuvm(pde_t*, uint, uint);
 void            freevm(pde_t*);
 void            inituvm(pde_t*, char*, uint);
 int             loaduvm(pde_t*, char*, struct inode*, uint, uint);
+pde_t*          copyuvm_original(pde_t*, uint);
 pde_t*          copyuvm(pde_t*, uint);
 void            switchuvm(struct proc*);
 void            switchkvm(void);

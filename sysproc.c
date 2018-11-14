@@ -11,6 +11,10 @@ int sys_fork(void) {
     return fork();
 }
 
+int sys_fork_original(void) {
+    return fork_original();
+}
+
 int sys_exit(void) {
     exit();
     return 0; // not reached

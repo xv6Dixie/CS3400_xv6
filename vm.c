@@ -42,7 +42,7 @@ void seginit(void) {
 // Return the address of the PTE in page table pgdir
 // that corresponds to virtual address va.  If alloc!=0,
 // create any required page table pages.
-static pte_t * walkpgdir(pde_t *pgdir, const void *va, int alloc) {
+static pte_t* walkpgdir(pde_t *pgdir, const void *va, int alloc) {
     pde_t *pde;
     pte_t *pgtab;
 
@@ -188,6 +188,7 @@ void inituvm(pde_t *pgdir, char *init, uint sz) {
 
     if(sz >= PGSIZE)
         panic("inituvm: more than a page");
+
     mem = kalloc();
     memset(mem, 0, PGSIZE);
     mappages(pgdir, 0, PGSIZE, V2P(mem), PTE_W|PTE_U);
@@ -200,7 +201,7 @@ int loaduvm(pde_t *pgdir, char *addr, struct inode *ip, uint offset, uint sz) {
     uint i, pa, n;
     pte_t *pte;
 
-    if((uint) addr % PGSIZE != 0)
+    if((uint)addr % PGSIZE != 0)
         panic("loaduvm: addr must be page aligned");
 
     for(i = 0; i < sz; i += PGSIZE) {
@@ -236,12 +237,15 @@ int allocuvm(pde_t *pgdir, uint oldsz, uint newsz) {
 
     for(; a < newsz; a += PGSIZE) {
         mem = kalloc();
+
         if(mem == 0) {
             cprintf("allocuvm out of memory\n");
             deallocuvm(pgdir, newsz, oldsz);
             return 0;
         }
+
         memset(mem, 0, PGSIZE);
+
         if(mappages(pgdir, (char*)a, PGSIZE, V2P(mem), PTE_W|PTE_U) < 0) {
             cprintf("allocuvm out of memory (2)\n");
             deallocuvm(pgdir, newsz, oldsz);
@@ -264,15 +268,20 @@ int deallocuvm(pde_t *pgdir, uint oldsz, uint newsz) {
         return oldsz;
 
     a = PGROUNDUP(newsz);
+
     for(; a  < oldsz; a += PGSIZE) {
         pte = walkpgdir(pgdir, (char*)a, 0);
+
         if(!pte)
             // Changes here
             a += (NPTENTRIES - 1) * PGSIZE;
+
         else if((*pte & PTE_P) != 0) {
             pa = PTE_ADDR(*pte);
+
             if(pa == 0)
                 panic("kfree");
+
             char *v = P2V(pa);
             kfree(v);
             *pte = 0;
@@ -292,6 +301,7 @@ void freevm(pde_t *pgdir) {
     deallocuvm(pgdir, KERNBASE, 0);
 
     for(i = 0; i < NPDENTRIES; i++) {
+
         if(pgdir[i] & PTE_P) {
             char * v = P2V(PTE_ADDR(pgdir[i]));
             kfree(v);
@@ -307,9 +317,48 @@ void clearpteu(pde_t *pgdir, char *uva) {
     pte_t *pte;
 
     pte = walkpgdir(pgdir, uva, 0);
+
     if(pte == 0)
         panic("clearpteu");
+
     *pte &= ~PTE_U; // Current page has write permissions enabled
+}
+
+pde_t* copyuvm_original(pde_t *pgdir, uint sz) {
+    pde_t *d;
+    pte_t *pte;
+    uint pa, i, flags;
+    char *mem;
+
+    if((d = setupkvm()) == 0)
+        return 0;
+
+    for(i = 0; i < sz; i += PGSIZE) {
+
+        if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
+            panic("copyuvm: pte should exist");
+
+        if(!(*pte & PTE_P))
+            panic("copyuvm: page not present");
+
+        pa = PTE_ADDR(*pte);
+        flags = PTE_FLAGS(*pte);
+
+        if((mem = kalloc()) == 0)
+            goto bad;
+
+        memmove(mem, (char*)P2V(pa), PGSIZE);
+
+        if(mappages(d, (void*)i, PGSIZE, V2P(mem), flags) < 0) {
+            kfree(mem);
+            goto bad;
+        }
+    }
+    return d;
+
+bad:
+    freevm(d);
+    return 0;
 }
 
 // Given a parent process's page table, create a copy
@@ -323,6 +372,7 @@ pde_t* copyuvm(pde_t *pgdir, uint sz) {
         return 0;
 
     for(i = 0; i < sz; i += PGSIZE) {
+
         if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
             panic("copyuvm: pte should exist");
 
