@@ -41,6 +41,7 @@ void trap(struct trapframe *tf) {
     }
 
     switch(tf->trapno) {
+
     // Page fault handler
     case T_PGFLT:
         pagefault(tf->err);
