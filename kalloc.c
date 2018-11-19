@@ -36,7 +36,7 @@ struct {
 void kinit1(void *vstart, void *vend) {
     initlock(&kmem.lock, "kmem");
     kmem.use_lock = 0;
-    kmem.numFreePages = 0;      // init free pages to 0
+    kmem.numFreePages = 0;                              // init free pages to 0
     freerange(vstart, vend);
 }
 
@@ -70,13 +70,13 @@ void kfree(char *v) {
         acquire(&kmem.lock);
     r = (struct run*)v;
 
-    if(kmem.pg_refcount[V2P(v) >> PGSHIFT] > 0)         // Decrement the reference count of a page whenever someone frees it
+    if(kmem.pg_refcount[V2P(v) >> PGSHIFT] > 0)          // Decrement the reference count of a page whenever someone frees it
         --kmem.pg_refcount[V2P(v) >> PGSHIFT];
 
     if(kmem.pg_refcount[V2P(v) >> PGSHIFT] == 0) {       // Free the page only if there are no references to the page
         // Fill with junk to catch dangling refs.
         memset(v, 1, PGSIZE);
-        kmem.numFreePages++;                            // Increment the number of free pages by 1 when a page is freed
+        kmem.numFreePages++;                             // Increment the number of free pages by 1 when a page is freed
         r->next = kmem.freelist;
         kmem.freelist = r;
 
@@ -97,7 +97,7 @@ char* kalloc(void) {
     if(r) {
         kmem.freelist = r->next;
         kmem.numFreePages--;                               // Decrement the number of free pages by 1 on a page allocation
-        kmem.pg_refcount[V2P((char*)r) >> PGSHIFT] = 1;   // reference count of a page is set to one when it is allocated
+        kmem.pg_refcount[V2P((char*)r) >> PGSHIFT] = 1;    // reference count of a page is set to one when it is allocated
     }
     if(kmem.use_lock)
         release(&kmem.lock);
@@ -138,8 +138,8 @@ void incrementReferenceCount(uint pa) {
 uint getReferenceCount(uint pa) {
     if(pa < (int)V2P(end) || pa >= PHYSTOP)
         panic("getReferenceCount");
-    uint count;
 
+    uint count;
     acquire(&kmem.lock);
     count = kmem.pg_refcount[pa >> PGSHIFT];
     release(&kmem.lock);

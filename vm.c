@@ -459,12 +459,13 @@ void pagefault(uint err_code) {
     uint va = rcr2();
     pte_t *pte;
 
-    // Error Handling code
+    // Error Handling for no user process
     if(myproc() == 0) {
         cprintf("Page fault with no user process from cpu %d, cr2=0x%x\n", mycpu()->apicid, va);
         panic("pagefault");
     }
 
+    // Error handling for illegal virtual address
     if(va >= KERNBASE || (pte = walkpgdir(myproc()->pgdir, (void*)va, 0)) == 0  ||
        !(*pte & PTE_P) || !(*pte & PTE_U) ) {
         cprintf("Illegal virtual address on cpu %d addr 0x%x, kill proc %s with pid %d\n",
@@ -474,7 +475,7 @@ void pagefault(uint err_code) {
         return;
     }
 
-    // Current page has write permissions enabled
+    // Error current page has write permissions enabled
     if(*pte & PTE_W) {
         cprintf("error code: %x, addr 0x%x\n", err_code, va);
         panic("Page fault already writeable");
@@ -489,7 +490,7 @@ void pagefault(uint err_code) {
     // Current process is the first one that tries to write to this page
     if(refCount > 1) {
 
-        // allocate a new memory page for the process
+        // allocate a new memory page for the process failing if we run out of memory
         if((mem = kalloc()) == 0) {
             cprintf("Page fault out of memory, kill proc %s with pid %d\n", myproc()->name, myproc()->pid);
             myproc()->killed = 1;
