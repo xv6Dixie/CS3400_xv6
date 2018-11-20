@@ -92,3 +92,13 @@ int sys_setTickets(void) {
     p->tickets = n;
     return n;
 }
+
+int sys_chtickets(void) {
+    int pid, tickets;
+    if(argint(0, &pid) < 0)
+        return -1;
+    if(argint(1, &tickets) < 0)
+        return -1;
+
+    return chtickets(pid, tickets);
+}

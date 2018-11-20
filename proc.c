@@ -81,6 +81,7 @@ static struct proc* allocproc(void) {
 found:
     p->state = EMBRYO;
     p->pid = nextpid++;
+    p->tickets = 10;
 
     release(&ptable.lock);
 
@@ -348,9 +349,10 @@ int wait(void) {
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
 void scheduler(void) {
-    struct proc *p;
+    struct proc *p = 0;
     struct cpu *c = mycpu();
     c->proc = 0;
+
 
     for(;;) {
         // Enable interrupts on this processor.
@@ -359,25 +361,46 @@ void scheduler(void) {
         // Loop over process table looking for process to run.
         acquire(&ptable.lock);
         for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+
+#ifdef DEFAULT
             if(p->state != RUNNABLE)
                 continue;
+#else
+#ifdef LOTTERY
 
-            // Switch to chosen process.  It is the process's job
-            // to release ptable.lock and then reacquire it
-            // before jumping back to us.
-            c->proc = p;
-            switchuvm(p);
-            p->state = RUNNING;
+            if(p->state != RUNNABLE)
+              continue;
 
-            swtch(&(c->scheduler), p->context);
-            switchkvm();
+            int totalT = totalTickets();
+            int draw = -1;
 
-            // Process is done running for now.
-            // It should have changed its p->state before coming back.
-            c->proc = 0;
+          	if (totalT > 0 || draw <= 0)
+          		draw = random(totalT);
+
+            draw = draw - p->tickets;
+
+            // process with a great number of tickets has more probability to put draw to 0 or negative and execute
+            if(draw >= 0)
+              continue;
+#endif
+#endif
+            if(p != 0) {
+                // Switch to chosen process.  It is the process's job
+                // to release ptable.lock and then reacquire it
+                // before jumping back to us.
+                c->proc = p;
+                switchuvm(p);
+                p->state = RUNNING;
+
+                swtch(&(c->scheduler), p->context);
+                switchkvm();
+
+                // Process is done running for now.
+                // It should have changed its p->state before coming back.
+                c->proc = 0;
+            }
         }
         release(&ptable.lock);
-
     }
 }
 
@@ -541,4 +564,35 @@ void procdump(void) {
         }
         cprintf("\n");
     }
+}
+
+/* This method counts the total number of tickets that the runnable processes have
+(the lottery is done only of the process which can execute) */
+int totalTickets(void) {
+
+    struct proc *p;
+    int total = 0;
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        if (p->state == RUNNABLE) {
+            total += p->tickets;
+        }
+    }
+
+    return total;
+}
+
+// Change Process tickets
+int chtickets(int pid, int tickets) {
+    struct proc *p;
+
+    acquire(&ptable.lock);
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+        if(p->pid == pid) {
+            p->tickets = tickets;
+            break;
+        }
+    }
+    release(&ptable.lock);
+
+    return pid;
 }
