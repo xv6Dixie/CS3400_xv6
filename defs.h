@@ -78,8 +78,9 @@ uint            getReferenceCount(uint pa);
 void            kbdintr(void);
 
 // lapic.c
-void            cmostime(struct rtcdate *r);
+
 int             lapicid(void);
+void            cmostime(struct rtcdate *r);
 extern volatile uint*    lapic;
 void            lapiceoi(void);
 void            lapicinit(void);

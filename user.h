@@ -25,7 +25,6 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int getNumFreePages(void);
-int setTickets(void);
 int chtickets(int, int);
 
 // ulib.c

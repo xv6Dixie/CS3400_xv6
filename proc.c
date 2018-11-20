@@ -8,6 +8,7 @@
 #include "spinlock.h"
 #include "rand.h"
 
+//TODO: testing for lottery sheduler
 
 struct {
     struct spinlock lock;
@@ -24,9 +25,8 @@ extern void trapret(void);
 void pinit(void) {
     initlock(&ptable.lock, "ptable");
     // Seed random with current time
-    //struct rtcdate *r;
-    //fill_rtcdate(r);
-    sgenrand(1);
+    struct rtcdate *r;
+    sgenrand((unsigned long)&r);
 }
 
 // Must be called with interrupts disabled

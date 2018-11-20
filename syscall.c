@@ -95,7 +95,6 @@ extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_getNumFreePages(void);
-extern int sys_setTickets(void);
 extern int sys_chtickets(void);
 
 static int (*syscalls[])(void) = {
@@ -122,7 +121,6 @@ static int (*syscalls[])(void) = {
     [SYS_mkdir]             sys_mkdir,
     [SYS_close]             sys_close,
     [SYS_getNumFreePages]   sys_getNumFreePages,
-    [SYS_setTickets]        sys_setTickets,
     [SYS_chtickets]         sys_chtickets,
 };
 
