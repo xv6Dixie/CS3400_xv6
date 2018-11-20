@@ -19,7 +19,6 @@ int nextpid = 1;
 extern void forkret(void);
 extern void trapret(void);
 
-static void wakeup1(void *chan);
 
 void pinit(void) {
     initlock(&ptable.lock, "ptable");
@@ -81,7 +80,6 @@ static struct proc* allocproc(void) {
 found:
     p->state = EMBRYO;
     p->pid = nextpid++;
-    p->tickets = 10;
 
     release(&ptable.lock);
 
@@ -133,6 +131,7 @@ void userinit(void) {
     p->tf->eflags = FL_IF;
     p->tf->esp = PGSIZE;
     p->tf->eip = 0; // beginning of initcode.S
+    p->tickets = DEFAULT_TICKETS; // used in RANDOM
 
     safestrcpy(p->name, "initcode", sizeof(p->name));
     p->cwd = namei("/");
@@ -187,6 +186,7 @@ int fork_original(void) {
     np->sz = curproc->sz;
     np->parent = curproc;
     *np->tf = *curproc->tf;
+    np->tickets = DEFAULT_TICKETS; // used in RANDOM
 
     // Clear %eax so that fork returns 0 in the child.
     np->tf->eax = 0;
@@ -233,6 +233,7 @@ int fork(void) {
     np->sz = curproc->sz;
     np->parent = curproc;
     *np->tf = *curproc->tf;
+    np->tickets = DEFAULT_TICKETS; // used in RANDOM
 
     // Clear %eax so that fork returns 0 in the child.
     np->tf->eax = 0;
@@ -362,11 +363,11 @@ void scheduler(void) {
         acquire(&ptable.lock);
         for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
 
-#ifdef DEFAULT
+        #ifdef DEFAULT
             if(p->state != RUNNABLE)
                 continue;
-#else
-#ifdef LOTTERY
+        #else
+        #ifdef LOTTERY
 
             if(p->state != RUNNABLE)
               continue;
@@ -382,8 +383,8 @@ void scheduler(void) {
             // process with a great number of tickets has more probability to put draw to 0 or negative and execute
             if(draw >= 0)
               continue;
-#endif
-#endif
+        #endif
+        #endif
             if(p != 0) {
                 // Switch to chosen process.  It is the process's job
                 // to release ptable.lock and then reacquire it
@@ -495,7 +496,7 @@ void sleep(void *chan, struct spinlock *lk) {
 //PAGEBREAK!
 // Wake up all processes sleeping on chan.
 // The ptable lock must be held.
-static void wakeup1(void *chan) {
+void wakeup1(void *chan) {
     struct proc *p;
 
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)

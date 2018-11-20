@@ -1,3 +1,5 @@
+#define DEFAULT_TICKETS 1
+
 // Per-CPU state
 struct cpu {
     uchar apicid;              // Local APIC ID
@@ -53,7 +55,7 @@ struct proc {
     struct file *ofile[NOFILE]; // Open files
     struct inode *cwd;         // Current directory
     char name[16];             // Process name (debugging)
-    int tickets;               // Number of tickets for lottery schedular
+    int tickets;               // Number of tickets for random scheduler
 };
 
 // Process memory is laid out contiguously, low addresses first:
@@ -62,5 +64,6 @@ struct proc {
 //   fixed-size stack
 //   expandable heap
 
+void wakeup1(void *chan);
 int totalTickets();
-int chtickets(int pid, int tickets);
+

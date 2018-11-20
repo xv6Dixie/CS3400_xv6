@@ -17,6 +17,14 @@ int main(void) {
     dup(0); // stdout
     dup(0); // stderr
 
+#ifdef DEFAULT
+    printf(1, "Scheduler policy: DEFAULT\n");
+#else
+#ifdef LOTTERY
+    printf(1, "Scheduler policy: LOTTERY\n");
+#endif
+#endif
+
     for(;;) {
         printf(1, "init: starting sh\n");
         pid = fork();

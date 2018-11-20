@@ -78,6 +78,8 @@ int sys_uptime(void) {
     return xticks;
 }
 
+extern int chtickets(int, int);
+
 int sys_getNumFreePages(void) {
     return getNumFreePages();
 }
