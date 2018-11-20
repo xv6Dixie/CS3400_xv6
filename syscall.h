@@ -22,3 +22,4 @@
 #define SYS_close  21
 #define SYS_getNumFreePages 22
 #define SYS_fork_original 23
+#define SYS_setTickets 24

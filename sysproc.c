@@ -81,3 +81,14 @@ int sys_uptime(void) {
 int sys_getNumFreePages(void) {
     return getNumFreePages();
 }
+
+int sys_setTickets(void) {
+    struct proc *p = myproc();
+    int n;
+
+    if(argint(0, &n) < 0)
+        return -1;
+
+    p->tickets = n;
+    return n;
+}
