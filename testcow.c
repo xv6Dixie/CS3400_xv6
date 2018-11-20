@@ -111,7 +111,7 @@ void test3() {
     }
 
     printf(1,"%d free pages before Parent exits\n",getNumFreePages());
-    exit();
+    wait();
     return;
 }
 
@@ -130,7 +130,7 @@ void test3_original() {
     }
 
     printf(1,"%d free pages before Parent exits\n",getNumFreePages());
-    exit();
+    wait();
     return;
 }
 

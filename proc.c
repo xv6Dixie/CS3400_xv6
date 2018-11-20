@@ -8,6 +8,7 @@
 #include "spinlock.h"
 #include "rand.h"
 
+
 struct {
     struct spinlock lock;
     struct proc proc[NPROC];
@@ -22,6 +23,10 @@ extern void trapret(void);
 
 void pinit(void) {
     initlock(&ptable.lock, "ptable");
+    // Seed random with current time
+    //struct rtcdate *r;
+    //fill_rtcdate(r);
+    sgenrand(1);
 }
 
 // Must be called with interrupts disabled
@@ -373,10 +378,10 @@ void scheduler(void) {
               continue;
 
             int totalT = totalTickets();
-            int draw = -1;
+            long draw = -1;
 
           	if (totalT > 0 || draw <= 0)
-          		draw = random(totalT);
+          		draw = random_at_most(totalT);
 
             draw = draw - p->tickets;
 
