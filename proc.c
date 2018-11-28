@@ -380,12 +380,8 @@ void scheduler(void) {
             int totalT = totalTickets();
             long draw = -1;
 
-          	if (totalT > 0 || draw <= 0)
-          		draw = random_at_most(totalT);
+          	draw = random_at_most(totalT);
 
-            draw = draw - p->tickets;
-
-            // process with a great number of tickets has more probability to put draw to 0 or negative and execute
             if(draw >= 0)
               continue;
         #endif
