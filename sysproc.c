@@ -104,3 +104,21 @@ int sys_chtickets(void) {
 
     return chtickets(pid, tickets);
 }
+
+int sys_nice(void) {
+    int n;
+    struct proc *proc = myproc();
+    if(argint(0,&n) < 0)
+        return -1;
+    proc->priority = n;
+    return 0;
+}
+
+int sys_getpri(void) {
+    struct proc *proc = myproc();
+    if (proc != 0) {
+        cprintf("PID:%d, Parent's PID:%d ,priority:%d\n",proc->pid, proc->parent->pid, proc->priority);
+        return 0;
+    }
+    return -1;
+}

@@ -26,6 +26,9 @@ int sleep(int);
 int uptime(void);
 int getNumFreePages(void);
 int chtickets(int, int);
+int nice(int);
+int getpri(void);
+
 
 // ulib.c
 int stat(const char*, struct stat*);

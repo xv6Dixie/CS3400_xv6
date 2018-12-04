@@ -23,3 +23,5 @@
 #define SYS_getNumFreePages 22
 #define SYS_fork_original 23
 #define SYS_chtickets  24
+#define SYS_nice   25
+#define SYS_getpri 26
