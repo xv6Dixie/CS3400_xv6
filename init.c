@@ -22,6 +22,10 @@ int main(void) {
 #else
 #ifdef LOTTERY
     printf(1, "Scheduler policy: LOTTERY\n");
+#else
+#ifdef MFQ
+    printf(1, "Scheduler policy: MLQ\n");
+#endif
 #endif
 #endif
 

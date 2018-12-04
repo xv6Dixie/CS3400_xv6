@@ -25,3 +25,4 @@
 #define SYS_chtickets  24
 #define SYS_nice   25
 #define SYS_getpri 26
+#define SYS_pdump 27

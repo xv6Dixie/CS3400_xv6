@@ -28,7 +28,7 @@ int getNumFreePages(void);
 int chtickets(int, int);
 int nice(int);
 int getpri(void);
-
+int pdump(void);
 
 // ulib.c
 int stat(const char*, struct stat*);

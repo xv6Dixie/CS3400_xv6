@@ -84,6 +84,10 @@ int sys_getNumFreePages(void) {
     return getNumFreePages();
 }
 
+int sys_pdump(void) {
+    return pdump();
+}
+
 int sys_setTickets(void) {
     struct proc *p = myproc();
     int n;

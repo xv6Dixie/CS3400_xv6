@@ -1,6 +1,7 @@
 #define DEFAULT_TICKETS 1
 // 3 queues
 #define PRIORITY_MAX 2
+#define NULL (0)
 
 // Per-CPU state
 struct cpu {
@@ -57,6 +58,10 @@ struct proc {
     struct file *ofile[NOFILE]; // Open files
     struct inode *cwd;         // Current directory
     char name[16];             // Process name (debugging)
+    int stime;                  //
+    uint ctime;                  // creation time
+    int retime;                  // ready
+    int rutime;                  // running
     int tickets;               // Number of tickets for random scheduler
     int priority;              // added for MLFQ
 };
@@ -72,4 +77,4 @@ struct proc {
 
 void wakeup1(void *chan);
 int totalTickets();
-
+int pdump(void);

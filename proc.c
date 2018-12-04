@@ -4,9 +4,9 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "x86.h"
-#include "proc.h"
 #include "spinlock.h"
 #include "rand.h"
+#include "proc.h"
 
 //TODO: testing for lottery scheduler
 
@@ -287,6 +287,43 @@ int fork(void) {
     release(&ptable.lock);
 
     return pid;
+}
+
+int pdump(void) {
+    struct proc *curproc = myproc();
+    struct proc *p;
+    struct proc *parent;
+
+    acquire(&ptable.lock);
+
+    // Pass abandoned children to init.
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        if (p->state != NULL) {
+            cprintf("[ %s ]\n", p->name);
+            cprintf("    -> State:     %d\n", p->state);
+            cprintf("    -> PID:       %d\n", p->pid);
+            // if (p->parent != NULL) {
+            //     cprintf("    -> Parent:    %d", p->parent);
+            //     parent = p->parent;
+            //
+            //     while (parent->state != NULL) {
+            //         cprintf("->[%s]", parent->name);
+            //         parent = p->parent;
+            //     }
+            //     cprintf("\n");
+            // }
+            cprintf("    -> Killed:    %d\n", p->killed);
+            cprintf("    -> Priority:  %d\n", p->priority);
+            cprintf("    -> Ctime:     %d\n", p->ctime);
+            cprintf("    -> Stime:     %d\n", p->stime);
+            cprintf("    -> Rutime:    %d\n", p->retime);
+            cprintf("    -> Retime:    %d\n", p->rutime);
+            cprintf("-------------------------------------------\n");
+        }
+    }
+
+    release(&ptable.lock);
+    return 0;
 }
 
 // Exit the current process.  Does not return.
