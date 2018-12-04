@@ -12,6 +12,7 @@
 struct gatedesc idt[256];
 extern uint vectors[];  // in vectors.S: array of 256 entry pointers
 struct spinlock tickslock;
+extern void resetPriority();
 uint ticks;
 
 void tvinit(void) {
@@ -51,6 +52,11 @@ void trap(struct trapframe *tf) {
         if(cpuid() == 0) {
             acquire(&tickslock);
             ticks++;
+#ifdef MFQ
+            if (ticks % 20 == 0) {
+                resetPriority();
+            }
+#endif
             wakeup(&ticks);
             release(&tickslock);
         }

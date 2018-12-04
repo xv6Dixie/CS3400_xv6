@@ -1,4 +1,6 @@
 #define DEFAULT_TICKETS 1
+// 3 queues
+#define PRIORITY_MAX 2
 
 // Per-CPU state
 struct cpu {
@@ -56,7 +58,11 @@ struct proc {
     struct inode *cwd;         // Current directory
     char name[16];             // Process name (debugging)
     int tickets;               // Number of tickets for random scheduler
+    int priority;              // added for MLFQ
 };
+
+
+
 
 // Process memory is laid out contiguously, low addresses first:
 //   text

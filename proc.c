@@ -8,12 +8,16 @@
 #include "spinlock.h"
 #include "rand.h"
 
-//TODO: testing for lottery sheduler
+//TODO: testing for lottery scheduler
 
 struct {
     struct spinlock lock;
     struct proc proc[NPROC];
-} ptable;
+    // 3 queues
+    struct proc* que[3][NPROC];
+    //number of processes in each queue
+    int priCount[3];
+}ptable;
 
 static struct proc *initproc;
 
@@ -27,6 +31,10 @@ void pinit(void) {
     // Seed random with current time
     struct rtcdate *r;
     sgenrand((unsigned long)&r);
+    // init queues
+    ptable.priCount[0] = -1;
+    ptable.priCount[1] = -1;
+    ptable.priCount[2] = -1;
 }
 
 // Must be called with interrupts disabled
@@ -145,11 +153,24 @@ void userinit(void) {
     // run this process. the acquire forces the above
     // writes to be visible, and the lock is also needed
     // because the assignment might not be atomic.
+#ifdef DEFAULT
     acquire(&ptable.lock);
-
     p->state = RUNNABLE;
-
     release(&ptable.lock);
+#else
+#ifdef LOTTERY
+    acquire(&ptable.lock);
+    p->state = RUNNABLE;
+    release(&ptable.lock);
+#else
+#ifdef MFQ
+    ptable.priCount[0]++;
+    ptable.que[0][ptable.priCount[0]] = p;
+    p->state = RUNNABLE;
+#endif
+#endif
+#endif
+
 }
 
 // Grow current process's memory by n bytes.
@@ -208,6 +229,10 @@ int fork_original(void) {
     pid = np->pid;
 
     acquire(&ptable.lock);
+#ifdef MFQ
+    ptable.priCount[0]++;
+    ptable.que[0][ptable.priCount[0]] = np;
+#endif
     np->state = RUNNABLE;
     release(&ptable.lock);
 
@@ -254,6 +279,10 @@ int fork(void) {
     pid = np->pid;
 
     acquire(&ptable.lock);
+#ifdef MFQ
+    ptable.priCount[0]++;
+    ptable.que[0][ptable.priCount[0]] = np;
+#endif
     np->state = RUNNABLE;
     release(&ptable.lock);
 
@@ -354,11 +383,11 @@ int wait(void) {
 //  - swtch to start running that process
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
+#ifdef DEFAULT
 void scheduler(void) {
     struct proc *p = 0;
     struct cpu *c = mycpu();
     c->proc = 0;
-
 
     for(;;) {
         // Enable interrupts on this processor.
@@ -368,24 +397,9 @@ void scheduler(void) {
         acquire(&ptable.lock);
         for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
 
-        #ifdef DEFAULT
             if(p->state != RUNNABLE)
                 continue;
-        #else
-        #ifdef LOTTERY
 
-            if(p->state != RUNNABLE)
-              continue;
-
-            int totalT = totalTickets();
-            long draw = -1;
-
-          	draw = random_at_most(totalT);
-
-            if(draw >= 0)
-              continue;
-        #endif
-        #endif
             if(p != 0) {
                 // Switch to chosen process.  It is the process's job
                 // to release ptable.lock and then reacquire it
@@ -405,6 +419,83 @@ void scheduler(void) {
         release(&ptable.lock);
     }
 }
+#else
+#ifdef LOTTERY
+void scheduler(void) {
+    struct proc *p = 0;
+    struct cpu *c = mycpu();
+    c->proc = 0;
+
+    for(;;) {
+        // Enable interrupts on this processor.
+        sti();
+
+        // Loop over process table looking for process to run.
+        acquire(&ptable.lock);
+        for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+
+            if(p->state != RUNNABLE)
+              continue;
+
+            int totalT = totalTickets();
+            long draw = -1;
+
+          	draw = random_at_most(totalT);
+
+            if(draw >= 0)
+              continue;
+
+            if(p != 0) {
+                // Switch to chosen process.  It is the process's job
+                // to release ptable.lock and then reacquire it
+                // before jumping back to us.
+                c->proc = p;
+                switchuvm(p);
+                p->state = RUNNING;
+
+                swtch(&(c->scheduler), p->context);
+                switchkvm();
+
+                // Process is done running for now.
+                // It should have changed its p->state before coming back.
+                c->proc = 0;
+            }
+        }
+        release(&ptable.lock);
+    }
+}
+#else
+#ifdef MFQ
+void scheduler(void) {
+    for(;;){
+        // Enable interrupts on this processor.
+        sti();
+
+        // Loop over process table looking for process to run.
+        acquire(&ptable.lock);
+        int priority;
+        for(priority = 0; priority <= PRIORITY_MAX; priority++) {
+            while(ptable.priCount[priority] > -1) {
+                struct proc *proc = ptable.que[priority][0];
+                int i;
+                for (i = 0; i < ptable.priCount[priority]; i++) {
+                    ptable.que[priority][i] = ptable.que[priority][i + 1];
+                }
+                ptable.priCount[priority]--;
+                switchuvm(proc);
+                proc->state = RUNNING;
+                swtch(&mycpu()->scheduler, proc->context);
+                switchkvm();
+                proc = 0;
+                priority = 0;
+            }
+        }
+        release(&ptable.lock);
+    }
+}
+#endif
+#endif
+#endif
 
 // Enter scheduler.  Must hold only ptable.lock
 // and have changed proc->state. Saves and restores
@@ -432,7 +523,15 @@ void sched(void) {
 
 // Give up the CPU for one scheduling round.
 void yield(void) {
+
     acquire(&ptable.lock); //DOC: yieldlock
+#ifdef MFQ
+    if (proc->priority < 2) {
+            proc->priority++;
+        }
+    ptable.priCount[proc->priority]++;
+    ptable.que[proc->priority][ptable.priCount[proc->priority]] = proc;
+#endif
     myproc()->state = RUNNABLE;
     sched();
     release(&ptable.lock);
@@ -502,6 +601,10 @@ void wakeup1(void *chan) {
 
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
         if(p->state == SLEEPING && p->chan == chan)
+#ifdef MFQ
+            ptable.priCount[p->priority]++;
+            ptable.que[p->priority][ptable.priCount[p->priority]] = p;
+#endif
             p->state = RUNNABLE;
 }
 
@@ -524,6 +627,10 @@ int kill(int pid) {
             p->killed = 1;
             // Wake process from sleep if necessary.
             if(p->state == SLEEPING)
+#ifdef MFQ
+                ptable.priCount[p->priority]++;
+                ptable.que[p->priority][ptable.priCount[p->priority]] = p;
+#endif
                 p->state = RUNNABLE;
             release(&ptable.lock);
             return 0;
@@ -597,4 +704,33 @@ int chtickets(int pid, int tickets) {
     release(&ptable.lock);
 
     return pid;
+}
+
+void resetPriority(void) {
+    struct proc *p;
+    acquire(&ptable.lock);
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        if (p->state == RUNNABLE) {
+            //delete the runnable process from its original queue
+            int token;
+            for (token = 0; token < NPROC; token++) {
+                if (p == ptable.que[p->priority][token]) {
+                    int i;
+                    for (i = token; i < ptable.priCount[p->priority]; i++) {
+                        ptable.que[p->priority][i] = ptable.que[p->priority][i + 1];
+                    }
+                    ptable.priCount[p->priority]--;
+                }
+                break;
+            }
+            //set the priority to 0, and add it to the first queue
+            p->priority = 0;
+            ptable.priCount[0]++;
+            ptable.que[0][ptable.priCount[0]] = p;
+        } else {
+            //queues only contain process that are runnable, so change the priority is enough.
+            p->priority = 0;
+        }
+    }
+    release(&ptable.lock);
 }
