@@ -53,6 +53,7 @@ void trap(struct trapframe *tf) {
             acquire(&tickslock);
             ticks++;
 #ifdef MFQ
+            updateStats();
             if (ticks % 20 == 0) {
                 resetPriority();
             }

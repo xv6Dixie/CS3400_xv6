@@ -78,3 +78,5 @@ struct proc {
 void wakeup1(void *chan);
 int totalTickets();
 int pdump(void);
+void updateStats();
+

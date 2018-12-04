@@ -771,3 +771,24 @@ void resetPriority(void) {
     }
     release(&ptable.lock);
 }
+
+void updateStats() {
+    struct proc *p;
+    acquire(&ptable.lock);
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+        switch(p->state) {
+            case SLEEPING:
+                p->stime++;
+                break;
+            case RUNNABLE:
+                p->retime++;
+                break;
+            case RUNNING:
+                p->rutime++;
+                break;
+            default:
+                ;
+        }
+    }
+    release(&ptable.lock);
+}
