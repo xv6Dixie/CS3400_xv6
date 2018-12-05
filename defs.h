@@ -9,6 +9,7 @@ struct spinlock;
 struct sleeplock;
 struct stat;
 struct superblock;
+struct pstat;
 
 // bio.c
 void            binit(void);
@@ -112,6 +113,7 @@ int             pipewrite(struct pipe*, char*, int);
 int             cpuid(void);
 void            exit(void);
 int             fork(void);
+void            getpinfo(struct pstat*);
 
 int             fork_original(void);
 
@@ -129,6 +131,7 @@ void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
 void            yield(void);
+int             testwait(int*, int*, int*);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

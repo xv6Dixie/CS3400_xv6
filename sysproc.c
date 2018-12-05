@@ -1,11 +1,14 @@
 #include "types.h"
 #include "x86.h"
+#include "pstat.h"
 #include "defs.h"
 #include "date.h"
 #include "param.h"
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+#include "pstat.h"
+
 
 int sys_fork(void) {
     return fork();
@@ -78,35 +81,12 @@ int sys_uptime(void) {
     return xticks;
 }
 
-extern int chtickets(int, int);
-
 int sys_getNumFreePages(void) {
     return getNumFreePages();
 }
 
 int sys_pdump(void) {
     return pdump();
-}
-
-int sys_setTickets(void) {
-    struct proc *p = myproc();
-    int n;
-
-    if(argint(0, &n) < 0)
-        return -1;
-
-    p->tickets = n;
-    return n;
-}
-
-int sys_chtickets(void) {
-    int pid, tickets;
-    if(argint(0, &pid) < 0)
-        return -1;
-    if(argint(1, &tickets) < 0)
-        return -1;
-
-    return chtickets(pid, tickets);
 }
 
 int sys_nice(void) {
@@ -124,5 +104,31 @@ int sys_getpri(void) {
         cprintf("PID:%d, Parent's PID:%d ,priority:%d\n",proc->pid, proc->parent->pid, proc->priority);
         return 0;
     }
+    cprintf("failed");
     return -1;
+}
+
+int sys_testwait(void) {
+    int *retime, *rutime, *stime;
+    if (argptr(0, (void*)&retime, sizeof(retime)) < 0)
+        return -1;
+    if (argptr(1, (void*)&rutime, sizeof(retime)) < 0)
+        return -1;
+    if (argptr(2, (void*)&stime, sizeof(stime)) < 0)
+        return -1;
+    return testwait(retime, rutime, stime);
+}
+
+int sys_yield(void) {
+    yield();
+    return 0;
+}
+
+int sys_getpinfo(void) {
+    struct pstat* ps;
+    if (argptr(0, (char**)&ps, sizeof(struct pstat)) < 0) {
+        return -1;
+    }
+    getpinfo(ps);
+    return 0;
 }

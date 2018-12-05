@@ -79,4 +79,4 @@ add_executable(CS3400_xv6
         vm.c
         wc.c
         x86.h
-        zombie.c nice.c rand.c rand.h delta_sched.c)
+        zombie.c nice.c rand.c rand.h delta_sched.c pstat.h)

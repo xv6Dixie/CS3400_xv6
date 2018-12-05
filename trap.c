@@ -52,12 +52,10 @@ void trap(struct trapframe *tf) {
         if(cpuid() == 0) {
             acquire(&tickslock);
             ticks++;
-#ifdef MFQ
             updateStats();
             if (ticks % 20 == 0) {
                 resetPriority();
             }
-#endif
             wakeup(&ticks);
             release(&tickslock);
         }

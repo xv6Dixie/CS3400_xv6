@@ -22,7 +22,9 @@
 #define SYS_close  21
 #define SYS_getNumFreePages 22
 #define SYS_fork_original 23
-#define SYS_chtickets  24
-#define SYS_nice   25
-#define SYS_getpri 26
-#define SYS_pdump 27
+#define SYS_nice   24
+#define SYS_getpri 25
+#define SYS_pdump 26
+#define SYS_testwait 27
+#define SYS_yield 28
+#define SYS_getpinfo 29

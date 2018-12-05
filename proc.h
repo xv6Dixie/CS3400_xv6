@@ -1,3 +1,5 @@
+#include "pstat.h"
+
 #define DEFAULT_TICKETS 1
 // 3 queues
 #define PRIORITY_MAX 2
@@ -41,7 +43,8 @@ struct context {
     uint eip;
 };
 
-enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
+//enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
+
 
 // Per-process state
 struct proc {
@@ -64,8 +67,8 @@ struct proc {
     int rutime;                  // running
     int tickets;               // Number of tickets for random scheduler
     int priority;              // added for MLFQ
+    int ticks;
 };
-
 
 
 
@@ -79,4 +82,5 @@ void wakeup1(void *chan);
 int totalTickets();
 int pdump(void);
 void updateStats();
+
 

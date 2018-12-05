@@ -95,10 +95,12 @@ extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_getNumFreePages(void);
-extern int sys_chtickets(void);
 extern int sys_nice(void);
 extern int sys_getpri(void);
 extern int sys_pdump(void);
+extern int sys_testwait(void);
+extern int sys_yield(void);
+extern int sys_getpinfo(void);
 
 static int (*syscalls[])(void) = {
     [SYS_fork]              sys_fork,
@@ -124,10 +126,12 @@ static int (*syscalls[])(void) = {
     [SYS_mkdir]             sys_mkdir,
     [SYS_close]             sys_close,
     [SYS_getNumFreePages]   sys_getNumFreePages,
-    [SYS_chtickets]         sys_chtickets,
-    [SYS_nice]    sys_nice,
-    [SYS_getpri]  sys_getpri,
-    [SYS_pdump]  sys_pdump,
+    [SYS_nice]              sys_nice,
+    [SYS_getpri]            sys_getpri,
+    [SYS_pdump]             sys_pdump,
+    [SYS_testwait]          sys_testwait,
+    [SYS_yield]             sys_yield,
+    [SYS_getpinfo]          sys_getpinfo,
 };
 
 void syscall(void) {

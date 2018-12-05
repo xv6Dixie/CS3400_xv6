@@ -1,3 +1,5 @@
+#include "pstat.h"
+
 struct stat;
 struct rtcdate;
 
@@ -25,7 +27,11 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int getNumFreePages(void);
-int chtickets(int, int);
+int testwait(int*, int*, int*);
+int yield(void);
+void getpinfo(struct pstat*);
+
+
 int nice(int);
 int getpri(void);
 int pdump(void);
@@ -43,3 +49,4 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
+void print_proc_info(struct pstat*, int);
