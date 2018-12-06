@@ -18,7 +18,7 @@ struct {
     struct proc* que[3][NPROC];
     //number of processes in each queue
     int priCount[3];
-}ptable;
+} ptable;
 
 static struct proc *initproc;
 struct pstat pstat_var;
@@ -41,7 +41,7 @@ void pinit(void) {
 
 // Must be called with interrupts disabled
 int cpuid() {
-    return mycpu()-cpus;
+    return mycpu() - cpus;
 }
 
 // Must be called with interrupts disabled to avoid the caller being
@@ -315,12 +315,12 @@ int fork(void) {
 
 int pdump(void) {
     static char *states[] = {
-            [UNUSED] =  "UNUSED",
-            [EMBRYO] =  "EMBRYO",
-            [SLEEPING] ="SLEEPING",
-            [RUNNABLE] ="RUNNABLE",
-            [RUNNING] = "RUNNING",
-            [ZOMBIE]  = "ZOMBIE"
+        [UNUSED] =  "UNUSED",
+        [EMBRYO] =  "EMBRYO",
+        [SLEEPING] ="SLEEPING",
+        [RUNNABLE] ="RUNNABLE",
+        [RUNNING] = "RUNNING",
+        [ZOMBIE]  = "ZOMBIE"
     };
 
     struct proc *p;
@@ -341,16 +341,21 @@ int pdump(void) {
             cprintf("[ %s ]\n", p->name);
             cprintf("    -> State:     %s\n", state);
             cprintf("    -> PID:       %d\n", p->pid);
-            // if (p->parent != NULL) {
-            //     cprintf("    -> Parent:    %d", p->parent);
-            //     parent = p->parent;
-            //
-            //     while (parent->state != NULL) {
-            //         cprintf("->[%s]", parent->name);
-            //         parent = p->parent;
-            //     }
-            //     cprintf("\n");
-            // }
+            cprintf("    -> Parent:    ");
+            if (p->parent != 0) {
+                parent = p->parent;
+                while (parent != 0) {
+                    cprintf("[ %s ]", parent->name);
+                    parent = parent->parent;
+                    if (parent != 0) {
+                        cprintf("->");
+                    }
+                }
+            } else {
+                cprintf("In the beginning there was init and none were before him.");
+            }
+            cprintf("\n");
+
             cprintf("    -> Killed:    %d\n", p->killed);
             cprintf("    -> Priority:  %d\n", p->priority);
             cprintf("    -> Ctime:     %d\n", p->ctime);
@@ -360,7 +365,6 @@ int pdump(void) {
             cprintf("-------------------------------------------\n");
         }
     }
-
 
     release(&ptable.lock);
 
@@ -458,14 +462,14 @@ int testwait(int *retime, int *rutime, int *stime) {
     struct proc *p;
     int havekids, pid;
     acquire(&ptable.lock);
-    for(;;){
+    for(;;) {
         // Scan through table looking for zombie children.
         havekids = 0;
-        for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+        for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if(p->parent != myproc())
                 continue;
             havekids = 1;
-            if(p->state == ZOMBIE){
+            if(p->state == ZOMBIE) {
                 // Found one.
                 *retime = p->retime;
                 *rutime = p->rutime;
@@ -490,7 +494,7 @@ int testwait(int *retime, int *rutime, int *stime) {
         }
 
         // No point waiting if we don't have any children.
-        if(!havekids || myproc()->killed){
+        if(!havekids || myproc()->killed) {
             release(&ptable.lock);
             return -1;
         }
@@ -560,15 +564,15 @@ void scheduler(void) {
         for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
 
             if(p->state != RUNNABLE)
-              continue;
+                continue;
 
             int totalT = totalTickets();
             long draw = -1;
 
-          	draw = random_at_most(totalT);
+            draw = random_at_most(totalT);
 
             if(draw >= 0)
-              continue;
+                continue;
 
             if(p != 0) {
                 // Switch to chosen process.  It is the process's job
@@ -592,7 +596,7 @@ void scheduler(void) {
 #else
 #ifdef MFQ
 void scheduler(void) {
-    for(;;){
+    for(;;) {
         // Enable interrupts on this processor.
         sti();
 
@@ -653,8 +657,8 @@ void yield(void) {
     acquire(&ptable.lock); //DOC: yieldlock
 #ifdef MFQ
     if (proc->priority < 2) {
-            proc->priority++;
-        }
+        proc->priority++;
+    }
     ptable.priCount[proc->priority]++;
     ptable.que[proc->priority][ptable.priCount[proc->priority]] = proc;
 #endif
@@ -729,7 +733,7 @@ void wakeup1(void *chan) {
         if(p->state == SLEEPING && p->chan == chan)
 #ifdef MFQ
             ptable.priCount[p->priority]++;
-            ptable.que[p->priority][ptable.priCount[p->priority]] = p;
+    ptable.que[p->priority][ptable.priCount[p->priority]] = p;
 #endif
             p->state = RUNNABLE;
 }
@@ -755,7 +759,7 @@ int kill(int pid) {
             if(p->state == SLEEPING)
 #ifdef MFQ
                 ptable.priCount[p->priority]++;
-                ptable.que[p->priority][ptable.priCount[p->priority]] = p;
+            ptable.que[p->priority][ptable.priCount[p->priority]] = p;
 #endif
                 p->state = RUNNABLE;
             release(&ptable.lock);
@@ -802,7 +806,7 @@ void procdump(void) {
 }
 
 /* This method counts the total number of tickets that the runnable processes have
-(the lottery is done only of the process which can execute) */
+   (the lottery is done only of the process which can execute) */
 int totalTickets(void) {
 
     struct proc *p;
@@ -848,19 +852,19 @@ void resetPriority(void) {
 void updateStats() {
     struct proc *p;
     acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
         switch(p->state) {
-            case SLEEPING:
-                p->stime++;
-                break;
-            case RUNNABLE:
-                p->retime++;
-                break;
-            case RUNNING:
-                p->rutime++;
-                break;
-            default:
-                ;
+        case SLEEPING:
+            p->stime++;
+            break;
+        case RUNNABLE:
+            p->retime++;
+            break;
+        case RUNNING:
+            p->rutime++;
+            break;
+        default:
+            ;
         }
     }
     release(&ptable.lock);
