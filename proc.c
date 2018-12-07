@@ -88,6 +88,8 @@ found:
     p->state = EMBRYO;
     p->pid = nextpid++;
     p->priority = 0;
+
+    // setup for queue timer
     for (priori = 0; priori < NPRIOR; priori++) {
         p->ticks_used[priori] = 0;
     }
@@ -202,7 +204,8 @@ int fork_original(void) {
     np->sz = curproc->sz;
     np->parent = curproc;
     *np->tf = *curproc->tf;
-    np->tickets = DEFAULT_TICKETS; // used in RANDOM
+
+    np->tickets = DEFAULT_TICKETS;                      // used in RANDOM
 
     // Clear %eax so that fork returns 0 in the child.
     np->tf->eax = 0;
@@ -249,7 +252,7 @@ int fork(void) {
     np->sz = curproc->sz;
     np->parent = curproc;
     *np->tf = *curproc->tf;
-    np->tickets = DEFAULT_TICKETS; // used in RANDOM
+    np->tickets = DEFAULT_TICKETS;                      // used in RANDOM
 
     // Clear %eax so that fork returns 0 in the child.
     np->tf->eax = 0;
@@ -271,14 +274,15 @@ int fork(void) {
     return pid;
 }
 
+// Shows some runtime stats for current processes
 int pdump(void) {
     static char *states[] = {
-            [UNUSED] =  "UNUSED",
-            [EMBRYO] =  "EMBRYO",
-            [SLEEPING] ="SLEEPING",
-            [RUNNABLE] ="RUNNABLE",
-            [RUNNING] = "RUNNING",
-            [ZOMBIE]  = "ZOMBIE"
+            [UNUSED] =      "UNUSED  ",
+            [EMBRYO] =      "EMBRYO  ",
+            [SLEEPING] =    "SLEEPING",
+            [RUNNABLE] =    "RUNNABLE",
+            [RUNNING] =     "RUNNING ",
+            [ZOMBIE]  =     "ZOMBIE  "
     };
 
     struct proc *p;
@@ -287,7 +291,6 @@ int pdump(void) {
 
     acquire(&ptable.lock);
 
-    // Pass abandoned children to init.
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
         if (p->state != NULL) {
 
@@ -318,7 +321,6 @@ int pdump(void) {
             cprintf("-------------------------------------------\n");
         }
     }
-
 
     release(&ptable.lock);
 
@@ -411,7 +413,7 @@ int wait(void) {
     }
 }
 
-// New wait call to help with testing.
+// New wait call to help with testing process timing stats.
 int testwait(int *retime, int *rutime, int *stime) {
     struct proc *p;
     int havekids, pid;
@@ -574,8 +576,8 @@ void scheduler(void) {
                 p->last_sched_time + TSTARV < ticks_copy) {
                 p->priority--;
                 // for debug purpose
-                 cprintf("boost the priority of pid=%d, new priority=%d, current ticks=%d, last sched=%d\n",
-                    p->pid, p->priority, ticks_copy, p->last_sched_time);
+//                 cprintf("boost the priority of pid=%d, new priority=%d, current ticks=%d, last sched=%d\n",
+//                    p->pid, p->priority, ticks_copy, p->last_sched_time);
             }
         }
 
@@ -587,8 +589,7 @@ void scheduler(void) {
                     continue;
 
                 // Switch to chosen process.  It is the process's job
-                // to release ptable.lock and then reacquire it
-                // before jumping back to us.
+
                 c->proc = p;
                 switchuvm(p);
                 p->state = RUNNING;
@@ -600,13 +601,11 @@ void scheduler(void) {
                 switchkvm();
 
                 // Process is done running for now.
-                // It should have changed its p->state before coming back.
                 c->proc = 0;
-                goto newround;
+                break;
             }
             priority++;
         }
-        newround:
         release(&ptable.lock);
 
     }
@@ -640,15 +639,12 @@ void sched(void) {
     mycpu()->intena = intena;
 }
 
-// p2b update ticks and priority. The function itself
-// does not enforce lock, so it should be inserted in
-// a locked region.
+// update ticks and priority
 void update_ticks(void) {
     struct proc *proc = myproc();
     proc->ticks_used[proc->priority]++;
     proc->ticks++;
-    if (proc->priority < NPRIOR - 1 &&
-        proc->ticks >= tick_quota[proc->priority]) {
+    if (proc->priority < NPRIOR - 1 && proc->ticks >= tick_quota[proc->priority]) {
         proc->priority++;
         proc->ticks = 0;
         // cprintf("update ticks:pid=%d, priority=%d, ticks=%d\n", proc->pid, proc->priority, proc->ticks);
@@ -797,8 +793,7 @@ void procdump(void) {
     }
 }
 
-/* This method counts the total number of tickets that the runnable processes have
-(the lottery is done only of the process which can execute) */
+
 int totalTickets(void) {
 
     struct proc *p;
