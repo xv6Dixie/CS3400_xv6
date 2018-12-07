@@ -119,7 +119,8 @@ int create_new_sleep_proc(int period, int n) {
 
 // n concurrent processes
 void benchmark1(int nprocs, int nloops, int period, int repeat) {
-    printf(1, "benchmark1: num processes = %d, num loops = %d\n", nprocs, nloops);
+    printf(1, "------------------------------------------------------------------------\n");
+    printf(1, "Concurrent Proc Test: num processes = %d, num loops = %d\n", nprocs, nloops);
     ptime_rcd_init(&ptime_rcd);
     struct pstat ps;
     int pi = 0;
@@ -162,9 +163,6 @@ void benchmark1(int nprocs, int nloops, int period, int repeat) {
         ptime_rcd_add_end(&ptime_rcd, pid, ticks);
     }
     printf(2, "all children terminated\n");
-//    if (getpinfo(&ps) < 0) {
-//        printf(2, "getpinfo: cannot get process information");
-//    }
     getpinfo(&ps);
     print_proc_info(&ps, 1);
     ptime_rcd_print(&ptime_rcd);
@@ -173,7 +171,8 @@ void benchmark1(int nprocs, int nloops, int period, int repeat) {
 // some short processes arrives, preempting long processes
 void benchmark2(int longprocs, int longloops, int shortprocs, int shortloops,
            int period, int repeat) {
-    printf(1, "benchmark2: num processes = %d longs, %d shorts, num loops = %d for long, %d for short\n",
+    printf(1, "------------------------------------------------------------------------\n");
+    printf(1, "Long/Short Proc Test: num processes = %d longs, %d shorts, num loops = %d for long, %d for short\n",
            longprocs, shortprocs, longloops, shortloops);
     ptime_rcd_init(&ptime_rcd);
     struct pstat ps;
@@ -251,6 +250,8 @@ void benchmark2(int longprocs, int longloops, int shortprocs, int shortloops,
 
 // CPU intensity + I/O intensity + periodically sleeping
 void benchmark3(int nprocs, int nloops, int t_sleep, int repeat, char* path) {
+    printf(1, "------------------------------------------------------------------------\n");
+    printf(1, "I/O Sim Test: num processes = %d, num repeats\n", nprocs, repeat);
     ptime_rcd_init(&ptime_rcd);
     struct pstat ps;
     int pi = 0;
@@ -409,30 +410,12 @@ void test1() {
     //exit();
 }
 
-void test2(void) {
-    struct pstat ps;
-    int pid = fork();
-    if (pid > 0) {
-        nice(2);
-        sleep(1);
-        getpri();
-        wait();
-    } else {
-        nice(0);
-        sleep(1);
-        getpri();
-    }
-    pdump();
-
-    print_proc_info(&ps, 1);
-    //exit();
-}
 
 int main(int argc, char *argv[]) {
 //    int rezz = pdump();
     test1();
 //    test2();
-//    runBM();
+    runBM();
     exit();
 
 }

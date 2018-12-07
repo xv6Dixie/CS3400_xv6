@@ -574,8 +574,8 @@ void scheduler(void) {
                 p->last_sched_time + TSTARV < ticks_copy) {
                 p->priority--;
                 // for debug purpose
-                /* cprintf("boost the priority of pid=%d, new priority=%d, current ticks=%d, last sched=%d\n",
-                    p->pid, p->priority, ticks_copy, p->last_sched_time); */
+                 cprintf("boost the priority of pid=%d, new priority=%d, current ticks=%d, last sched=%d\n",
+                    p->pid, p->priority, ticks_copy, p->last_sched_time);
             }
         }
 
