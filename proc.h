@@ -1,8 +1,6 @@
 #include "pstat.h"
 
 #define DEFAULT_TICKETS 1
-// 3 queues
-#define PRIORITY_MAX 2
 #define NULL (0)
 
 // Per-CPU state
@@ -61,13 +59,18 @@ struct proc {
     struct file *ofile[NOFILE]; // Open files
     struct inode *cwd;         // Current directory
     char name[16];             // Process name (debugging)
-    int stime;                  //
-    uint ctime;                  // creation time
-    int retime;                  // ready
-    int rutime;                  // running
+
+    int stime;                 // sleep time
+    uint ctime;                // creation time
+    int retime;                // ready
+    int rutime;                // running
+
     int tickets;               // Number of tickets for random scheduler
-    int priority;              // added for MLFQ
-    int ticks;
+
+    int priority;              // priority 0, 1, 2
+    uint ticks;                // ticks used under the current priority
+    uint ticks_used[NPRIOR];   // number of ticks used history
+    uint last_sched_time;      // by ticks
 };
 
 

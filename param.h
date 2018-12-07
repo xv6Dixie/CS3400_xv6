@@ -11,3 +11,5 @@
 #define LOGSIZE      (MAXOPBLOCKS*3)  // max data blocks in on-disk log
 #define NBUF         (MAXOPBLOCKS*3)  // size of disk block cache
 #define FSSIZE       1000  // size of file system in blocks
+#define NPRIOR        3  // number of priority levels
+#define TSTARV      100  // starvation period (100 ticks)

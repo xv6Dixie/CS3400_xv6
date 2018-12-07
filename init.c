@@ -21,7 +21,7 @@ int main(void) {
     printf(1, "Scheduler policy: DEFAULT\n");
 #else
 #ifdef LOTTERY
-    printf(1, "Scheduler policy: LOTTERY\n");
+    printf(1, "Scheduler policy: RANDOM\n");
 #else
 #ifdef MFQ
     printf(1, "Scheduler policy: MLQ\n");

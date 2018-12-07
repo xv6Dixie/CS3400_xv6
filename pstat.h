@@ -14,7 +14,7 @@ struct pstat {
     int pid[NPROC];   // PID of each process
     int priority[NPROC]; // current priority level of each process (0-3)
     enum procstate state[NPROC];  // current state (e.g., SLEEPING or RUNNABLE) of each process
-    int ticks[NPROC][4]; // number of ticks each process has accumulated at each of 4 priorities
+    int ticks[NPROC][NPRIOR]; // number of ticks each process has accumulated at each of 3 priorities
 };
 
 #endif //CS3400_XV6_PSTAT_H
