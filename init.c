@@ -20,7 +20,7 @@ int main(void) {
 #ifdef DEFAULT
     printf(1, "Scheduler policy: DEFAULT\n");
 #else
-#ifdef LOTTERY
+#ifdef RND
     printf(1, "Scheduler policy: RANDOM\n");
 #else
 #ifdef MFQ

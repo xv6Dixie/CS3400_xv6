@@ -57,7 +57,7 @@ void ptime_rcd_print(struct ptime* prcd) {
 
 void empty_loop(int n) {
     while (0 < n--) {
-        (void)(n * n * n);
+        (void)(n * n * n * n);
     }
 }
 
@@ -311,10 +311,10 @@ void benchmark3(int nprocs, int nloops, int t_sleep, int repeat, char* path) {
 }
 
 void runBM() {
-    benchmark1(5, 100000000, 80, 5);
-    benchmark1(61, 100000000, 200, 5);
-    benchmark2(10, 100000000, 10, 1000, 80, 2);
-    benchmark3(3, 100000000, 10, 10, "README");
+    benchmark1(5, 1000000000, 80, 5);
+    benchmark1(61, 1000000000, 200, 5);
+    benchmark2(10, 1000000000, 10, 1000, 80, 2);
+    benchmark3(3, 1000000000, 10, 10, "README");
 }
 
 // Runs multiple different process types and averages the results

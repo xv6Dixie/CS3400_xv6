@@ -505,7 +505,7 @@ void scheduler(void) {
     }
 }
 #else
-#ifdef LOTTERY
+#ifdef RND
 void scheduler(void) {
     struct proc *p = 0;
     struct cpu *c = mycpu();
